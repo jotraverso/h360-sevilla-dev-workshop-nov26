@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "salesforce-metadata-experts": {
+      "type": "http",
+      "url": "https://api.salesforce.com/platform/mcp/v1/d/orgfarm-4feca51f5f-dev-ed/develop/platform/metadata-experts",
+      "oauth": {
+        "clientId": "3MVG9HtWXcDGV.nFC_zaaYJRyz9dX75KmK091GbUHMKCEr87Sov.m6jhpO99Oagux0oArkHtBLMe_waiEPOR7",
+        "callbackPort": 8080
+      }
+    },
+    "salesforce-api-context": {
+      "type": "http",
+      "url": "https://api.salesforce.com/platform/mcp/v1/d/orgfarm-4feca51f5f-dev-ed/develop/platform/salesforce-api-context",
+      "oauth": {
+        "clientId": "3MVG9HtWXcDGV.nFC_zaaYJRyz9dX75KmK091GbUHMKCEr87Sov.m6jhpO99Oagux0oArkHtBLMe_waiEPOR7",
+        "callbackPort": 8080
+      }
+    },
+    "salesforce-sobject-all": {
+      "type": "http",
+      "url": "https://api.salesforce.com/platform/mcp/v1/d/orgfarm-4feca51f5f-dev-ed/develop/platform/sobject-all",
+      "oauth": {
+        "clientId": "3MVG9HtWXcDGV.nFC_zaaYJRyz9dX75KmK091GbUHMKCEr87Sov.m6jhpO99Oagux0oArkHtBLMe_waiEPOR7",
+        "callbackPort": 8080
+      }
+    }
+  }
+}

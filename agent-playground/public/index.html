@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MCP Playground · Local Claude Agent</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">⚡</div>
+        <div>
+          <div class="brand-title">MCP Playground</div>
+          <div class="brand-sub">Local Claude Code agent</div>
+        </div>
+      </div>
+
+      <section class="panel">
+        <h3>Session</h3>
+        <dl class="kv">
+          <dt>Project</dt><dd id="projectDir" class="mono ellipsis" title="">–</dd>
+          <dt>Model</dt><dd id="model">–</dd>
+          <dt>Session</dt><dd id="sessionId" class="mono ellipsis">new</dd>
+          <dt>Claude Code</dt><dd id="ccVersion">–</dd>
+        </dl>
+        <label class="hint" for="modelSelect">Model for new conversations</label>
+        <select id="modelSelect" class="select">
+          <option value="claude-sonnet-5-5">claude-sonnet-5-5</option>
+          <option value="claude-opus-5-5">claude-opus-5-5</option>
+          <option value="claude-haiku-5-5">claude-haiku-5-5</option>
+        </select>
+        <button id="newChat" class="btn btn-secondary btn-block" style="margin-top:8px">＋ New conversation</button>
+      </section>
+
+      <section class="panel">
+        <h3>Conversations <span id="convCount" class="badge">0</span></h3>
+        <div id="convList" class="conv-list"><div class="hint">No saved conversations yet.</div></div>
+      </section>
+
+      <section class="panel">
+        <h3>Tool approval</h3>
+        <select id="approval" class="select">
+          <option value="mcp">Auto-approve project MCP tools; ask for file and shell tools</option>
+          <option value="ask">Ask before every tool call</option>
+          <option value="bypass">Bypass all permission prompts</option>
+        </select>
+        <p class="hint">MCP servers come from the project's <span class="mono">.mcp.json</span>; this app never changes them. In Playground mode the agent answers with inline HTML snippets rendered below; file or shell tools still prompt. "Allow for this session" never persists anything to disk.</p>
+      </section>
+
+      <section class="panel">
+        <h3>Last run</h3>
+        <dl class="kv stats">
+          <dt>Turns</dt><dd id="statTurns">–</dd>
+          <dt>Duration</dt><dd id="statDuration">–</dd>
+          <dt>Tokens in / out</dt><dd id="statTokens">–</dd>
+          <dt>Cost</dt><dd id="statCost">–</dd>
+        </dl>
+      </section>
+      <section class="panel">
+        <h3>MCP servers <span id="serverCount" class="badge">0</span></h3>
+        <div id="projectServers" class="server-list"></div>
+        <details id="otherServersWrap" hidden>
+          <summary class="hint">Other servers from your account (tools disabled here) <span id="otherCount" class="badge">0</span></summary>
+          <div id="otherServers" class="server-list"></div>
+        </details>
+      </section>
+
+
+      <section class="panel">
+        <label class="toggle"><input type="checkbox" id="showTools" checked /> Show tool calls</label>
+        <label class="toggle"><input type="checkbox" id="showThinking" /> Show thinking</label>
+        <label class="toggle"><input type="checkbox" id="showLog" /> Show raw event log</label>
+      </section>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="topbar-title">Test the Salesforce-hosted MCP servers</div>
+          <div class="topbar-sub">Chat with the agent exactly as in the workshop playground. Tool calls and results are shown inline.</div>
+        </div>
+        <div id="runState" class="run-state idle">Idle</div>
+      </header>
+
+      <div id="messages" class="messages">
+        <div id="empty" class="empty">
+          <h2>Ask the agent something that needs Salesforce</h2>
+          <p>The agent runs in this project and can call the MCP servers configured in it. Try one of these:</p>
+          <div class="chips">
+            <button class="chip" data-prompt="Which MCP servers and tools do you have available from this project? List them grouped by server.">List available MCP tools</button>
+            <button class="chip" data-prompt="Who am I logged in as in Salesforce? Use the sobject MCP server to get my user info.">Who am I in Salesforce?</button>
+            <button class="chip" data-prompt="Describe the Account object: its most important standard fields, with type and purpose.">Describe the Account object</button>
+            <button class="chip" data-prompt="Run a SOQL query that returns the 5 most recently created Opportunities with Name, StageName, Amount and CloseDate, and summarize the results.">Query recent Opportunities</button>
+            <button class="chip" data-prompt="Explain what the ApexClass metadata type is and which fields it has, using the Salesforce API context MCP server.">Explain ApexClass metadata</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="eventLog" class="event-log" hidden></div>
+
+      <form id="composer" class="composer">
+        <textarea id="prompt" rows="2" placeholder="Message the agent… (Enter to send, Shift+Enter for a new line)"></textarea>
+        <div class="composer-actions">
+          <button type="button" id="stop" class="btn btn-danger" hidden>■ Stop</button>
+          <button type="submit" id="send" class="btn btn-primary">Send ↵</button>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <template id="tplTool">
+    <div class="tool">
+      <button type="button" class="tool-head">
+        <span class="tool-status spinner"></span>
+        <span class="tool-server"></span>
+        <span class="tool-name"></span>
+        <span class="tool-elapsed"></span>
+        <span class="tool-caret">▸</span>
+      </button>
+      <div class="tool-body" hidden>
+        <div class="tool-section"><div class="tool-label">Input</div><pre class="tool-input"></pre></div>
+        <div class="tool-section tool-result-wrap" hidden><div class="tool-label">Result</div><pre class="tool-result"></pre><button type="button" class="link tool-more" hidden>Show full result</button></div>
+      </div>
+    </div>
+  </template>
+
+  <script src="/app.js"></script>
+</body>
+</html>

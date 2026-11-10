@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{SHORT_DISTINCTIVE_TITLE}}</title>
+<style>
+  /* ===== Theme tokens: light palette on :root, dark overrides only redefine tokens ===== */
+  :root{
+    --bg:#f7f7f5; --surface:#ffffff; --ink:#1d1d1f; --muted:#5f6368; --line:#e2e2de; --code-bg:#f1f1ee;
+    --accent:#1d4ed8; --accent-soft:#e6edfc;
+    --warn:#9a5b00; --warn-soft:#fff4e0;
+    --bad:#b42318;  --bad-soft:#fdecea;
+    --good:#166534; --good-soft:#e3f4e8;
+    /* up to 4 categorical tags: keep text-on-soft contrast >= 4.5 */
+    --c1:#0f766e; --c1-soft:#e0f4f1;
+    --c2:#1d4ed8; --c2-soft:#e6edfc;
+    --c3:#7c3aed; --c3-soft:#f0eafd;
+    --c4:#c2410c; --c4-soft:#fdeee5;
+    --diagram-box:#ffffff; --diagram-edge:#7a7f87;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141517; --surface:#1d1f22; --ink:#e8e8e6; --muted:#a3a6ab; --line:#33363b; --code-bg:#25282c;
+      --accent:#8fb2ff; --accent-soft:#1a2540;
+      --warn:#f0b35a; --warn-soft:#2e2414;
+      --bad:#f28b82;  --bad-soft:#3a1f1d;
+      --good:#86d39b; --good-soft:#16301f;
+      --c1:#5eead4; --c1-soft:#12302d;
+      --c2:#8fb2ff; --c2-soft:#1a2540;
+      --c3:#c4a5ff; --c3-soft:#2a1f40;
+      --c4:#fb9a63; --c4-soft:#3a2216;
+      --diagram-box:#23262a; --diagram-edge:#9aa0a8;
+      color-scheme: dark;
+    }
+  }
+
+  /* ===== Base ===== */
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font:15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif}
+  .wrap{max-width:1080px; margin:0 auto; padding:40px 20px 80px}
+  h1{font-size:30px; line-height:1.2; margin:0 0 8px; letter-spacing:-.01em}
+  h2{font-size:22px; margin:52px 0 12px; padding-top:10px; border-top:1px solid var(--line)}
+  h3{font-size:16px; margin:22px 0 8px}
+  p{margin:0 0 12px; max-width:78ch}
+  ul, ol{max-width:80ch}
+  a{color:var(--accent)}
+  .sub{color:var(--muted)}
+  .meta{display:flex; flex-wrap:wrap; gap:6px 22px; color:var(--muted); font-size:13px; margin-top:10px}
+
+  /* Code: inline identifiers may break anywhere in prose/cards; never inside table field cells */
+  code{font:13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background:var(--code-bg); padding:1px 5px; border-radius:4px}
+  p code, li code, .tile code{overflow-wrap:anywhere}
+  pre{background:var(--code-bg); padding:14px 16px; border-radius:8px; overflow-x:auto;
+      font:13px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin:8px 0 6px}
+  pre code{background:none; padding:0}
+  .note{font-size:12.5px; color:var(--muted); margin:4px 0 16px}
+
+  /* ===== Navigation ===== */
+  .toc{display:flex; flex-wrap:wrap; gap:8px; margin:20px 0 0}
+  .toc a{background:var(--surface); border:1px solid var(--line); color:var(--ink); text-decoration:none; padding:6px 12px; border-radius:999px; font-size:13px}
+  .toc a:hover{border-color:var(--accent); color:var(--accent)}
+
+  /* ===== Callouts ===== */
+  .callout{border-left:4px solid var(--accent); background:var(--accent-soft); padding:14px 18px; border-radius:6px; margin:18px 0}
+  .callout strong:first-child{color:var(--accent)}
+  .callout.warn{border-color:var(--warn); background:var(--warn-soft)} .callout.warn strong:first-child{color:var(--warn)}
+  .callout.bad{border-color:var(--bad); background:var(--bad-soft)}   .callout.bad strong:first-child{color:var(--bad)}
+  .callout.good{border-color:var(--good); background:var(--good-soft)} .callout.good strong:first-child{color:var(--good)}
+  .callout p:last-child{margin-bottom:0}
+
+  /* ===== Cards & grids ===== */
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:20px 22px; margin:16px 0}
+  .card-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 14px; margin-bottom:6px}
+  .card-head h2{border:0; margin:0; padding:0}
+  .pill{font-size:12px; color:var(--muted); background:var(--bg); border:1px solid var(--line); border-radius:999px; padding:2px 10px}
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin:16px 0}
+  .tile{background:var(--surface); border:1px solid var(--line); border-top:4px solid var(--accent); border-radius:10px; padding:16px 18px}
+  .tile h3{margin:0 0 6px} .tile p{font-size:14px; color:var(--muted); margin:0 0 8px}
+  .tile ul{margin:0; padding-left:18px; font-size:13.5px} .tile li{margin:2px 0}
+  .tile code{font-size:12px}
+  .tile.c1{border-top-color:var(--c1)} .tile.c2{border-top-color:var(--c2)} .tile.c3{border-top-color:var(--c3)} .tile.c4{border-top-color:var(--c4)}
+
+  /* KPI tiles */
+  .kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin:16px 0}
+  .kpi{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px 16px}
+  .kpi .v{font-size:26px; font-weight:650; line-height:1.1; font-variant-numeric:tabular-nums}
+  .kpi .l{font-size:12.5px; color:var(--muted); margin-top:4px}
+
+  /* ===== Tags ===== */
+  .tag{display:inline-block; font-size:11px; font-weight:600; padding:1px 8px; border-radius:999px; margin:1px 3px 1px 0; white-space:nowrap}
+  .tag.c1{background:var(--c1-soft); color:var(--c1)} .tag.c2{background:var(--c2-soft); color:var(--c2)}
+  .tag.c3{background:var(--c3-soft); color:var(--c3)} .tag.c4{background:var(--c4-soft); color:var(--c4)}
+  .tag.neutral{background:var(--code-bg); color:var(--muted)}
+  .badge{font-size:10.5px; font-weight:600; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:0 5px; margin-left:4px; vertical-align:1px}
+
+  /* ===== Tables: ALWAYS inside .table-wrap; nowrap only on <code> inside .k cells ===== */
+  .table-wrap{overflow-x:auto; margin:8px 0 6px}
+  table{border-collapse:collapse; width:100%; font-size:14px}
+  th,td{text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:600}
+  td.k{width:30%} td.k code{white-space:nowrap; line-height:1.9}   /* key / field-name column */
+  td.t{color:var(--muted); font-size:13px}                          /* short type column */
+  td.n, th.n{text-align:right; font-variant-numeric:tabular-nums}   /* numbers */
+  .vals{color:var(--muted); font-size:13px}
+  tr.gap td{background:var(--bad-soft)}
+
+  /* ===== Diagram container ===== */
+  .diagram{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px; overflow-x:auto}
+  .diagram svg{display:block; min-width:720px; width:100%; height:auto}
+  .legend{display:flex; flex-wrap:wrap; gap:18px; font-size:13px; color:var(--muted); margin-top:8px}
+
+  footer{margin-top:56px; color:var(--muted); font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>{{Title that states the answer or subject}}</h1>
+  <p class="sub">{{One sentence: what this page answers}}</p>
+  <div class="meta"><span>Org: {{org}}</span><span>Source: {{MCP / tools used}}</span><span>Generated: {{date}}</span></div>
+  <nav class="toc"><a href="#summary">Summary</a><a href="#details">Details</a></nav>
+</header>
+
+<!-- Data caveats first (e.g. empty org, partial data). Variants: .callout / .warn / .bad / .good -->
+<div class="callout warn"><strong>{{Caveat headline.}}</strong> {{Plain-language consequence for the reader.}}</div>
+
+<section id="summary">
+  <h2>Summary</h2>
+  <div class="kpis">
+    <div class="kpi"><div class="v">{{42}}</div><div class="l">{{metric label}}</div></div>
+  </div>
+  <div class="grid">
+    <div class="tile c1"><h3><span class="tag c1">{{Theme}}</span></h3><p>{{question}}</p>
+      <ul><li><code>{{Object.Field__c}}</code> {{why}}</li></ul></div>
+  </div>
+</section>
+
+<section id="details" class="card">
+  <div class="card-head"><h2>{{Object or topic}}</h2><span class="pill">{{context pill}}</span></div>
+  <p>{{One-line purpose.}}</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Field</th><th>Type</th><th>Theme</th><th>What it tells you</th></tr></thead>
+    <tbody>
+      <tr><td class="k"><code>{{Field}}</code><span class="badge">custom</span></td><td class="t">{{type}}</td>
+          <td><span class="tag c2">{{tag}}</span></td><td>{{meaning}} <span class="vals">{{Value A · Value B}}</span></td></tr>
+    </tbody>
+  </table></div>
+  <!-- SOQL/code: escape < and > as &lt; &gt; -->
+  <pre><code>SELECT Id FROM Opportunity WHERE CloseDate &lt; TODAY</code></pre>
+  <p class="note">{{Short caveat about the query.}}</p>
+</section>
+
+<!-- Optional diagram. Follow the SVG rules in SKILL.md (labels never on lines; use text-anchor). -->
+<!--
+<div class="diagram">
+<svg viewBox="0 0 900 300" role="img" aria-label="{{what the diagram shows}}">
+  <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" style="fill:var(--diagram-edge)"/></marker></defs>
+  <style>
+    .bx{fill:var(--diagram-box); stroke:var(--line); stroke-width:1.5}
+    .t{fill:var(--ink); font:600 15px -apple-system,Segoe UI,Roboto,sans-serif}
+    .s{fill:var(--muted); font:12px -apple-system,Segoe UI,Roboto,sans-serif}
+    .lbl{fill:var(--muted); font:11.5px ui-monospace,Menlo,Consolas,monospace}
+    .e{stroke:var(--diagram-edge); stroke-width:1.6; fill:none}
+  </style>
+  <line class="e" x1="230" y1="60" x2="348" y2="60" marker-end="url(#arr)"/>
+  <text class="lbl" x="289" y="50" text-anchor="middle">FieldId</text>
+  <rect class="bx" x="30" y="30" width="200" height="60" rx="8"/>
+  <text class="t" x="46" y="56">Child</text><text class="s" x="46" y="76">subtitle</text>
+  <rect class="bx" x="350" y="30" width="200" height="60" rx="8"/>
+  <text class="t" x="366" y="56">Parent</text><text class="s" x="366" y="76">subtitle</text>
+</svg>
+</div>
+-->
+
+<footer>{{Sources: which MCP tools/objects/queries produced this content.}}</footer>
+</div>
+</body>
+</html>
